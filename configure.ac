@@ -42,15 +42,19 @@ m4_define([spruce_debug_default],
 AC_INIT(spruce, [spruce_version],
         [http://bugzilla.gnome.org/enter_bug.cgi?product=spruce])
 
-AC_CONFIG_SRCDIR([spruce/spruce.h])
+AC_CONFIG_SRCDIR([README])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CANONICAL_SYSTEM
+AC_CANONICAL_HOST
 
 # Save this value here, since automake will set cflags later
 cflags_set=${CFLAGS+set}
 
-AM_INIT_AUTOMAKE([no-define])
-
-# Specify a configuration file
+AM_INIT_AUTOMAKE([1.9 dist-bzip2 tar-ustar no-dist-gzip foreign])
+AC_SUBST([ACLOCAL_AMFLAGS], ["-I m4 \${ACLOCAL_FLAGS}"])
+dnl m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AM_CONFIG_HEADER([config.h])
+AM_MAINTAINER_MODE
 
 
 SPRUCE_MAJOR_VERSION=spruce_major_version
