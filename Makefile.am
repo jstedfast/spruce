@@ -7,6 +7,7 @@ DISTCLEANFILES = iconv-detect.h
 EXTRA_DIST = 			\
 	spruce-1.0.pc.in	\
 	iconv-detect.c		\
+	config.rpath		\
 	marshal.mk		\
 	zentimer.h 		\
 	zenprofiler.h
@@ -49,3 +50,5 @@ mydistcheck: dist
 	echo "$$dashes"; \
 	echo "$$banner"; \
 	echo "$$dashes"
+
+ACLOCAL_AMFLAGS = -I m4
