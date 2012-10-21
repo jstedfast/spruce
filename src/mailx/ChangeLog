@@ -1,0 +1,37 @@
+2006-02-17  Jeffrey Stedfast  <fejj@novell.com>
+
+	* main.c (display_message_list): Print a message count symmary at
+	the top always.
+	(list_msgs): Implemented jump-to-new when showing a list of
+	messages.
+	(read_folder): Don't print count summary here anymore, this is
+	handled inside display_message_list(). Also added check for 'n'
+	command.
+
+2006-02-15  Jeffrey Stedfast  <fejj@novell.com>
+
+	* main.c (display_message_list): Fixed the from column to shrink
+	in size correctly (or more so) when the message seq-id is longer
+	than 2 digits so things look nice.
+
+2004-06-10  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* main.c (main): Disconnect cleanly.
+
+2004-03-06  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* session.c (mailx_session_init): Sett he storage path.
+
+	* main.c (main): Fixed the unref code in the case that errors
+	occur.
+
+	* session.c (mailx_request_passwd): Fix the password requester a
+	bit.
+
+2004-02-28  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* main.c: Initial import.
+
+	* session.[c,h]: Initial import.
+
+

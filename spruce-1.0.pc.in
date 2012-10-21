@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+
+Name: Spruce
+Version: @SPRUCE_VERSION@
+Description: Mail Access Library
+Requires: glib-2.0,gobject-2.0,gmime-2.6
+Libs: -L${libdir} @SPRUCE_LIBS@
+Cflags: -I${includedir}/spruce-1.0 @SPRUCE_CFLAGS@

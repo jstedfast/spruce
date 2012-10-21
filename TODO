@@ -1,0 +1,144 @@
+- work out threading/mutex locking vs. some other form of async
+
+- work out cancellation (might have to be made a core part of gmime,
+unless we re-implement GMimeStreamFs but with cancellation as part of
+libspruce)
+
+- what should be loaded as modules? SASL? probably all providers...
+
+- write SpruceProvider class - should be a GObject. should it have a
+::get_widget() for configuration of a new store/transport? or how else
+should it be done? might want to consider being independant from gtk+
+
+- all functions that can fail should take a GError rather than setting
+errno.
+
+- anything else?
+
+
+
+- if MboxStore::init gets a uri like mbox:///var/spool/mail/fejj
+(ie. the basename is a file vs a dir), then it needs to go into
+"spool"-mode and advertise itself as a spool rather than a
+store... either that or we need a new mbox-spool store class.
+
+- SpruceUIDCache could be a GObject iface that SprucePOPStore and
+SpruceMboxStore implemented.  Might have methods such as:
+  - ::remeber_uid(const char *uid)
+  - ::get_new_uids(GError **err)
+  - ::save_uids(void)
+
+get_new_uids() could either take a GPtrArray *uids arg, or, better
+yet... would all be handled by the store.
+
+POP could use LIST responses to generate pseudo UIDs:
+
+C: LIST
+S: +OK
+S: 1 3645
+S: 2 1024
+S: ...
+S: .\r\n
+
+the UID could become "1:3645"
+
+the UIDCache object would also have to have a way to store whether
+these are real UIDs vs bogus. If real UIDs, the POP store could use
+g_str_hash() and g_str_equal() to figure out if e've downloaded a msg
+before, otherwise it would have to compare/diff the lists and try to
+figure out the changes:
+
+so if the first time we get:
+
+1:1727
+2:6352
+3:6274
+4:2749
+
+and the second time we get:
+
+1:1727
+2:6274
+3:1873
+4:2021
+
+we'll have to figure out that msgs 2 & 4 from the first time have been
+deleted and that msg 3 is now msg 2 and so forth.
+
+
+
+- A variation on GError such that we can present more usable error
+messages. So, basically, what the low level code can do is set
+everything it knows about the error on the Exception var. Something like:
+
+Exception::set ("type", CREATE_FOLDER, "folder", folder->full_name, ..., -1);
+
+and then the app can do: Exception::get_message()
+
+this would then figure out which info it had available and construct a user-friendly error message.
+
+case CREATE_FOLDER:
+if (have_folder_name) {
+   if (have_server) {
+      if (have_reason)
+         "Could not create folder `%s' on server %s because %s"
+      else
+         "Could not create folder `%s' on server %s"
+   } else {
+      if (have_reason)
+         "Could not create folder `%s' because %s"
+      else
+         "Could not create folder `%s'"
+   }
+} else {
+   if (have_reason)
+      "Could not create folder because %s"
+   else
+      "Could not create folder"
+}
+
+
+doing things this way would make it simpler to keep error dialogs
+worded consistantly and to give them a friendlier wording.
+
+
+...however, it might be kind of hard to work out all the possibilities
+properly. need to think about this...
+
+
+- SpruceStore should have a "security" property (and maybe a
+"certificate" property?) (using th GObject ::get_property stuff?).
+
+The "security" prop could be used by the mail app to display "you are
+connected in secure mode" to the user somehow (lock icon in the status
+bar?).
+
+
+The "certificate" prop could be used to view the X509 SSL cert if
+available.
+
+
+
+- Should SpruceFolder::list/lsub really return a GPtrArray of strings
+rather than SpruceFolders? If we returned an array of SpruceFolder
+objects, then in the case of IMAP, we could create the folder using
+the modified UTF-7 name returned to us in the LIST/LSUB resposne from
+the server and thus not have to worry about our code later getting it
+right (think: server returns an improper folder name to us ... making
+it impossible to get the original folder name by converting the UTF-8
+name into UTF-7).
+
+
+- Need to fix SpruceFolder so that when a parent folder gets renamed,
+it renames itself. The way to do this is probably to connect to the
+"renamed" signal in spruce_folder_construct() and in the callback:
+
+1. update folder->full_name and folder->name
+
+2. call some virtual method that each subclass could implement to
+update various state (like summary path or UTF-7 name in the case of
+IMAP).
+
+
+- what should the SpruceStore::get_*_namespaces() return? an array of
+strings? or a list of SpruceFolder objects?

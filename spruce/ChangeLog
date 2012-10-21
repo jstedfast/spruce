@@ -1,0 +1,2059 @@
+2010-11-18  Jeffrey Stedfast  <fejj@novell.com>
+
+	* spruce-provider.c (spruce_provider_lookup): Renamed from
+	spruce_provider_get(). Don't ref the returned provider.
+	(spruce_provider_load): Now internal and takes a plugin arg rather
+	than a path arg. This simplifies things.
+
+	* spruce-session.c (spruce_session_get_service): Don't need to
+	unref the provider anymore.
+
+2009-10-06  Jeffrey Stedfast  <fejj@novell.com>
+
+	* spruce-tcp-stream.c (stream_length): Updated to return gint64 as
+	needed by GMime 2.6
+
+	* providers/smtp/spruce-smtp-transport.c (prepare_message): Use
+	the new g_mime_object_encode() method to force encoding of all
+	mime parts.
+	(smtp_data): Updated to use GMimeEncodingConstraint.
+
+2009-05-04  Jeffrey Stedfast  <fejj@novell.com>
+
+	* spruce-sasl-digest-md5.c (generate_response): Use GChecksum here
+	too.
+
+	* providers/imap/spruce-imap-summary.c (decode_references): Use
+	GChecksum.
+	(decode_envelope): Same.
+
+	* providers/pop/spruce-pop-store.c (pop_try_authenticate): Use
+	GChecksum.
+
+2009-05-03  Jeffrey Stedfast  <fejj@novell.com>
+
+	* spruce-sasl-digest-md5.c (compute_response): Use GChecksum.
+
+	* spruce-sasl-cram-md5.c (cram_md5_challenge): Same.
+
+	* spruce-folder-summary.c (decode_references): Here too.
+	(message_info_new_from_message): And here.
+
+2009-04-18  Jeffrey Stedfast  <fejj@novell.com>
+
+	* spruce-folder-search.c: Updated.
+
+	* search.c: SearchResults no longer reference the context and
+	cleaned up some other code.
+
+2008-11-02  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_expunge): Use a
+	different EXPUNGE command depending on whether or not a set of
+	uids was passed in.
+
+	* providers/pop/spruce-pop-folder.c (pop_expunge): Implemented uid
+	expunge.
+
+	* providers/maildir/spruce-maildir-folder.c (maildir_expunge):
+	Implemented uid expunge.
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_expunge): Implemented
+	uid expunge. Also fixed logic - if we succeed, we need to regen
+	the summary because the old offsets will be wrong.
+
+	* spruce-folder-summary.c (spruce_folder_summary_reload): New
+	function to reload a summary (will be regenerated).
+
+	* spruce-folder.c (spruce_folder_expunge): Now takes a 'uids'
+	argument specifying a sorted list of uids to expunge.
+
+2008-10-01  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-stream.c (next_alloc_size): New
+	function to calculate the next size we want to alloc (multiple of
+	64).
+
+2008-09-07  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/smtp/spruce-smtp-transport.c (prepare_part): Updated
+	for GMime's foreach API changes.
+
+	* search.c: Updated to not use MemChunk.
+
+2008-09-02  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_append_message): The
+	APPEND command needs a folder.
+
+2008-09-01  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-summary.c (envelope_decode_address):
+	Updated for GMime API changes.
+
+	* providers/smtp/spruce-smtp-transport.c (rcpt_to_all): Updated
+	for GMime API changes.
+
+	* providers/sendmail/spruce-sendmail-transport.c (rcpt_to_all):
+	Updated for GMime API changes.
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_create_from_line):
+	Updated for GMime API changes.
+
+	* spruce-folder-summary.c (message_info_new_from_message): Updated
+	for GMime API changes.
+
+	* spruce-transport.c (spruce_transport_send): No longer takes
+	const address[list] arguments. The from argument is now an
+	InternetAddressMailbox.
+
+2008-06-20  Jeffrey Stedfast  <fejj@novell.com>
+
+	* spruce-file-utils.c (spruce_file_util_encode_size_t): Just call
+	encode_uint32().
+	(spruce_file_util_encode_time_t): Same.
+	(spruce_file_util_decode_size_t): Call decode_uint32()
+	(spruce_file_util_decode_time_t): Same.
+	(spruce_file_util_encode_string): Shortcut empty strings.
+	(spruce_file_util_decode_string): Don't read() if there's no data
+	to read.
+
+	* spruce-url.c (spruce_url_parse_string): Return bool
+	success/failure to parse the input uri string.
+	(spruce_url_new_from_string): If we fail to parse the string,
+	return NULL.
+
+2008-05-12  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-summary.c (spruce_imap_summary_flush_updates):
+	Properly handle empty folders.
+
+	* providers/imap/spruce-imap-store.c (connect_to_server):
+	Disconnect the engine in certain error conditions (e.g. if ssl
+	negotiations fail).
+
+	* providers/imap/spruce-imap-engine.c (spruce_imap_engine_disconnect):
+	New convenience function.
+
+2008-05-08  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-folder.c (untagged_fetch): Emit a
+	folder-changed event if the flags changed.
+
+	* providers/imap/spruce-imap-command.c (imap_command_append_string):
+	Properly escape quoted-specials when appending a QSTRING.
+
+	* providers/imap/spruce-imap-store.c (imap_query_auth_types):
+	Implemented.
+
+2008-05-07  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_folder_query_properties):
+	New convenience function to LIST a specified folder to obtain the
+	folder properties such as what the folder can contain.
+	(spruce_imap_folder_new): Use this new function rather than
+	implementing it ourselves.
+	(imap_create): After creating a folder, query it's properties.
+
+	* providers/imap/spruce-imap-engine.c (spruce_imap_engine_iterate):
+	When reconnecting fails, need to unref the command before
+	returning -1.
+
+2007-12-22  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_list_or_lsub): Never
+	return NULL unless the GError has been set.
+	(spruce_imap_folder_new): Use a switch-statement here instead of
+	an if-else-if-else for the ic->result.
+
+2007-10-28  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-summary.c (struct imap_fetch_all_t):
+	Added a bool "all" variable, used to decide if this fetch request
+	is a FETCH ALL command.
+	(imap_fetch_all_add): Added a 'complete' argument which should be
+	TRUE if being called after the command has completed or FALSE if
+	it is being called while the command is still in progress. If
+	'complete' is FALSE, add the completely fetched items to the
+	summary and then save the summary to disk.
+	(untagged_fetch_all): If index < first, adjust the 'added'
+	array. If fetch->count is a multiple of 1024, add what we've got
+	so far to the summary.
+	(imap_fetch_all_reset): Reset the imap_fetch_all_t user_data and
+	adjust the FETCH ALL command to restart where we left off rather
+	than from the beginning.
+	(imap_summary_fetch_all): Set the ic->reset function and set
+	fetch->all to TRUE.
+	(imap_summary_fetch_flags): Set fetch->all to FALSE.
+	(spruce_imap_summary_flush_updates): Pass TRUE as the 'complete'
+	argument to imap_fetch_all_add().
+
+	* providers/imap/spruce-imap-engine.c (spruce_imap_engine_iterate):
+	Reset commands before we add them back into the queue.
+
+	* providers/imap/spruce-imap-command.c (spruce_imap_command_newv):
+	Initialize all member variables including the new ic->reset
+	function pointer.
+	(spruce_imap_command_reset): If ic->reset is set, call it on the
+	user_data.
+
+2007-10-26  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/smtp/spruce-smtp-transport.c (connect_to_server):
+	Don't use spruce_tcp_stream_raw_new() anymore.
+
+	* providers/imap/spruce-imap-store.c (connect_to_server): Same.
+
+	* providers/pop/spruce-pop-store.c (connect_to_server): Here too.
+
+	* spruce-tcp-stream-ssl.c: Updated for changes to SpruceTcpStream.
+
+	* spruce-tcp-stream.c: Moved all of the SpruceTcpStreamRaw
+	connect/read/write/etc implementations here.
+
+	* spruce-tcp-stream-raw.[c,h]: Removed.
+
+2007-06-09  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-engine.c: Detect the IDLE extension.
+
+2007-06-06  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* spruce-sasl-gssapi.c (gssapi_challenge): Use
+	GSS_C_NT_HOSTBASED_SERVICE instead of gss_nt_service_name (which
+	has been deprecated).
+
+	* providers/pop/spruce-pop-stream.c (stream_read): Changed the
+	logic a bit to remove excess indentation. Also fixed a possible
+	bug if a \r\n was split between read boundaries.
+
+2007-06-04  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* spruce-file-utils.c (spruce_read): Simplified the cancellable
+	implementation.
+	(spruce_write): Same.
+
+	* providers/imap/spruce-imap-summary.c (imap_fetch_all_update):
+	Renamed back, also use spruce_folder_summary_count() instead of
+	summary->messages->len.
+
+2007-06-02  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* spruce-sasl.c (spruce_sasl_challenge_base64): Updated for base64
+	changes below.
+
+	* spruce-sasl-digest-md5.c (generate_response): Same.
+
+	* spruce-string-utils.c (spruce_base64_encode): Renamed from
+	spruce_base64_encode_simple().
+	(spruce_base64_decode): Same.
+
+2007-06-01  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-summary.c (imap_fetch_all_update):
+	Don't iterate over just fetch->total messages. We need to iterate
+	over the entire summary in order to remove *all* messages which no
+	longer exist.
+
+2007-05-31  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-utils.c
+	(spruce_imap_parse_flags_list): Merged imap_flags and
+	imap_user_flags, no need for them to be separate arrays.
+
+2007-04-14  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-utils.c
+	(spruce_imap_utils_set_unexpected_token_error): Handle 64bit
+	numbers.
+
+	* *.c (spruce_*_get_type): Set n_preallocs to 0.
+
+	* providers/imap/spruce-imap-stream.c
+	(spruce_imap_stream_next_token): Implement support for tokenizing
+	64bit integer values.
+	(spruce_imap_stream_get_type): Set n_preallocs to 0.
+
+2007-04-14  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-folder.c (imap_xfer_messages): If we
+	are attempting to move messages (as opposed to copy) and the
+	server supports the XGWMOVE extension, use that.
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_handle_untagged_1): Handle XGWMOVE untagged
+	responses.
+	(spruce_imap_engine_capability): Query for the XGWEXTENSIONS if
+	the server is GroupWise.
+	(parse_xgwextensions): Parse the XGWEXTENSIONS response for the
+	supported extensions.
+
+2007-04-09  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_iterate): If the command fails due to a
+	disconnect, retry up to 3 times.
+
+	* providers/imap/spruce-imap-store.c (connect_to_server): Unref
+	the command before toggling into TLS mode since we don't need it
+	anymore.
+
+2007-04-09  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* spruce-session.c (spruce_session_get_network_state): New
+	function.
+
+	* spruce-folder.c (spruce_folder_search_free): New function to
+	free the search result vector (we can make this virtual later if
+	it would make sense to).
+
+	* spruce-folder-search.c (spruce_folder_search_match_all): strdup
+	the matched uids.
+
+	* spruce-offline-store.c: New source file implementing the base
+	OfflineStore class.
+
+	* spruce-offline-folder.c: New source file implementing the base
+	OfflineFolder class.
+
+2007-04-08  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/smtp/spruce-smtp-transport.c (connect_to_server):
+	Updated for enable_ssl() API change.
+
+	* providers/pop/spruce-pop-store.c (stls_cmd): Updated for
+	enable_ssl() API change.
+
+	* spruce-tcp-stream-ssl.c (spruce_tcp_stream_ssl_enable_ssl): Now
+	takes a GError.
+
+	* spruce-url.c (spruce_url_parse_string): Fixed some logic,
+	hopefully made more resiliant to malformed params?
+
+	* providers/imap/spruce-imap-store.c (connect_to_server): After a
+	successful STARTTLS command, toggle into TLS mode.
+
+2007-04-08  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-summary.c (imap_summary_fetch_all):
+	Now takes a uid string to start from so that we can use a UID
+	FETCH command.
+	(untagged_fetch_all): Update fetch->total if we need to resize the
+	GPtrArray.
+	(imap_summary_fetch_flags): Now takes an 'exists' argument so that
+	we can use the smaller of 'exists' vs 'scount' to pre-alloc our
+	GPtrArray.
+	(spruce_imap_summary_flush_updates): Updated for above API
+	changes.
+
+	* providers/imap/spruce-imap-stream.c (spruce_imap_stream_line):
+	Set *inend to '\0' before checking if we need to read more data
+	(since part of that check is to see if *inptr != '\n', which, if
+	inptr == inend from a previous call, will fail).
+
+2007-04-01  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-summary.c (imap_summary_fetch_flags):
+	No longer takes a first/last arguments as this is always done on
+	the full set of old messages. We also now use UID FETCH so that we
+	won't waste bandwidth getting info for messages that we don't yet
+	have in our summary cache (which can happen if old messages had
+	been expunged from the server).
+	(imap_fetch_all_update): Changed slightly, we no longer bother
+	returning the first seqid that we don't know about.
+	(spruce_imap_summary_flush_updates): Updated for the changes
+	above.
+
+2007-02-24  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* spruce-folder.c (spruce_folder_list, spruce_folder_lsub):
+	Document the new API and fixed to return an empty GPtrArray rather
+	than NULL when the result is no matching folders (but where an
+	error did not occur).
+
+	* providers/imap/spruce-imap-folder.c
+	(spruce_imap_folder_new_list): New convenience function for
+	instantiating a SpruceIMAPFolder based on a LIST or LSUB response
+	item.
+	(imap_list_or_lsub): Reimplemented to follow the same glob
+	matching rules as mbox and maildir.
+
+	* providers/maildir/spruce-maildir-folder.c (maildir_list):
+	Reimplemented to use the same new rules as mbox_list has been
+	rewritten for.
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_list): Rewritten to
+	use glob-style pattern matching and to not list recursively.
+
+2007-02-09  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_handle_untagged_1): In the case of getting an
+	untagged BYE response, don't return error if we sent a LOGOUT
+	command.
+
+2007-02-09  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-engine.c
+	(engine_prequeue_folder_select): Fixed the logic a bit
+	here... need to make sure we are in the SELECTED state when
+	checking ic->folder == engine->folder.
+
+2007-02-09  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_queue_command): New function to queue a
+	SpruceIMAPCommand.
+	(spruce_imap_engine_queue): Use
+	spruce_imap_engine_queue_command().
+	(spruce_imap_engine_prequeue): Changed to work similarly to
+	spruce_imap_engine_queue().
+	(spruce_imap_engine_prequeue_command): New function similar to
+	spruce_imap_engine_queue_command().
+	(spruce_imap_engine_capability): Need to prequeue the CAPABILITY
+	command in case we are in the process of reconnecting and have
+	pending commands from a previous connection.
+	(spruce_imap_engine_namespace): Same with NAMESPACE and LIST.
+
+	* providers/imap/spruce-imap-store.c (connect_to_server): We need
+	to prequeue the STARTTLS command in the case of a re-connect with
+	pending commands from the previous connection.
+	(connect_to_server): After a successful STARTTLS, we need to
+	re-CAPABILITY.
+	(imap_try_authenticate): Need to prequeue AUTHENTICATE and LOGIN
+	for the same reason we have to prequeue STARTTLS.
+
+2007-02-08  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/spruce-imap-stream.c (spruce_imap_stream_line):
+	Fixed the logic a bit... we don't want to hang on a read() if
+	there isn't necessarily more data to buffer.
+
+2007-02-07  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/imap/*.c: Compile warning fixes.
+
+	* providers/imap/spruce-imap-store.c (imap_disconnect): After
+	unreffing the engine, set it to NULL.
+
+	* providers/imap/spruce-imap-summary.c: Updated to use
+	SpruceCache, which is replacing SpruceStreamCache.
+
+	* providers/imap/spruce-imap-folder.c: Updated to use SpruceCache
+	and SpruceCacheStream.
+	(imap_get_message): If we are using a SpruceCacheStream, make sure
+	to commit it to the cache if we get an OK response.
+
+	* spruce-cache.[c,h]: Renamed spruce-stream-class.[c,h] and made
+	some minor adjustments.
+
+	* spruce-cache-stream.[c,h]: Split out from the old
+	spruce-stream-cache.[c,] sources.
+
+2007-02-04  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* spruce-stream-cache.c (cache_clear_tmp): Duh, don't rm -rf
+	everything in the toplevel cache dir, we just wanted to clear out
+	the tmp subdirectory.
+	(cache_stream_finalize): Check spillover before closing the
+	backing stream (which will indirectly close the mem stream which
+	free's the memory buffer). Clearly we can't let our backing stream
+	get closed...
+	(stream_close): Hence this change :-) Just no-op, we don't want to
+	close the backing stream.
+	(stream_tell): Pass the tell() call along to our backing stream.
+
+2007-02-03  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* providers/maildir/spruce-maildir-folder.c (maildir_delete): Use
+	spruce_rmdir() rather than maildir_rmdir().
+	(maildir_rmdir): Removed.
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_delete): Use
+	spruce_rmdir(), don't implement an mbox_rmdir() for no reason.
+	(mbox_rmdir): Removed.
+
+	* providers/imap/spruce-imap-summary.c
+	(spruce_imap_summary_expunge): Expire the uid of the message that
+	just got expunged.
+	(spruce_imap_summary_set_uidvalidity): Expire the entire cache.
+	(imap_fetch_all_update): Remove items from the cache if they no
+	longer exist on the server.
+
+	* providers/imap/spruce-imap-engine.c: Added CONDSTORE to the list
+	of capabilities detected. Also added more RESP-CODES.
+	(spruce_imap_engine_parse_resp_code): Handle UIDNOTSTICKY,
+	HIGHESTMODSEQ and NOMODSEQ resp-codes.
+
+	* spruce-file-utils.c (spruce_rmdir): Rewrote to reuse the same
+	GString path recursively.
+	(spruce_mkdir): Just call g_mkdir_with_parents().
+
+	* providers/imap/spruce-imap-folder.c (spruce_imap_folder_init):
+	Init stream cache to NULL.
+	(spruce_imap_folder_finalize): Unref the stream cache.
+	(spruce_imap_folder_new): Create a stream cache object.
+	(imap_delete): Delete the stream cache.
+	(imap_rename): Update the stream cache's base directory path, also
+	fixed some of the logic here...
+	(imap_newname): Same.
+	(imap_get_message): Check the cache first in case the message is
+	already there to avoid unnecessary chatter with the IMAP
+	server. If not already in the cache, add a stream to the cache
+	which will contain the message stream when the fetch is complete.
+
+	* spruce-stream-cache.[c,h]: New class for caching streams.
+
+2007-02-01  Jeffrey Stedfast  <fejj@gnome.org>
+
+	* spruce-offline-journal.c: Implemented.
+
+	* spruce-folder-summary.c: Rewritten to use the GSlice allocator
+	rather than GMime's MemChunk allocator.
+
+2006-06-19  Jeffrey Stedfast  <fejj@novell.com>
+
+	* spruce-file-utils.c (spruce_file_util_encode_string): If string
+	is NULL, encode 0 as size_t, not uint32 in case the sizes of the 2
+	are different.
+	(spruce_read): If the cancel_fd is -1, then pass 1 as nfds to poll.
+	(spruce_write): Same.
+	(spruce_file_util_encode_int8): New function.
+	(spruce_file_util_decode_int8): New.
+	(spruce_file_util_encode_uint16): New.
+	(spruce_file_util_decode_uint8): New.
+	(spruce_file_util_encode_int16): New.
+	(spruce_file_util_decode_int16): New.
+	(spruce_file_util_encode_uint16): New.
+	(spruce_file_util_decode_uint16): New.
+	(spruce_file_util_encode_int32): New.
+	(spruce_file_util_decode_int32): New.
+	(spruce_file_util_encode_uint32): New.
+	(spruce_file_util_decode_uint32): New.
+
+2006-05-06  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/mbox/spruce-mbox-summary.c (mbox_summary_load): Don't
+	bother writing to a null stream anymore to get size/lines, default
+	summer implementation handles this for us now.
+
+	* providers/maildir/spruce-maildir-summary.c
+	(maildir_summary_load_cb): Don't bother writing to a null stream
+	anymore to get size/lines, default summer implementation handles
+	this for us now.
+
+	* spruce-folder-summary.c (message_info_new_from_message):
+	Calculate info->size, info->lines, and some initial info->flags
+	(like MULTIPART, SIGNED, and ENCRYPTED).
+
+	* spruce-folder-summary.h: Changed the flags again - also added
+	SIGNED and ENCRYPTED flags.
+
+2006-05-04  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-summary.c (decode_internaldate): Use
+	g_ascii_strncasecmp().
+
+	* providers/imap/spruce-imap-engine.c (engine_parse_capability):
+	Use the g_ascii_* variants of the str[n]casecmp functions.
+
+	* spruce-folder-summary.c (spruce_system_flag): Use
+	g_ascii_strcasecmp().
+	(spruce_system_flag_is_set): Same.
+
+	* spruce-folder-search.c (header_contains): Use
+	g_ascii_strcasecmp().
+
+2006-04-30  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_close): if the server
+	implementation supports UNSELECT, use it.
+
+	* providers/imap/spruce-imap-engine.c (imap_capabilities): Added
+	"UNSELECT".
+	(engine_state_change): Handle UNSELECT responses.
+
+	* providers/mbox/spruce-mbox-store.c (mbox_get_folder_by_url): Use
+	"Inbox" if the fragment doesn't exist.
+
+2006-04-29  Jeffrey Stedfast  <fejj@novell.com>
+
+	* spruce-folder-summary.c (spruce_folder_summary_unload): Don't
+	unload unless we're loaded.
+	(spruce_folder_summary_load): Init the memchunk here instead of in
+	message_info_new().
+	(message_info_new): Assume memchunk initialised already.
+
+2006-04-28  Jeffrey Stedfast  <fejj@novell.com>
+
+	* spruce-folder-summary.h: Changed the bits for some flags and
+	added Junk and NotJunk.
+
+	* providers/imap/spruce-imap-utils.c
+	(spruce_imap_parse_flags_list): Handle Junk and NotJunk flags.
+
+	* providers/imap/spruce-imap-*.c: Set the ic->err to NULL after
+	propagating it to our caller's err variable.
+
+	* providers/imap/spruce-imap-stream.c
+	(spruce_imap_stream_next_token): refill the buffer if we are
+	unable to get the eoln following a literal {} marker.
+	(spruce_imap_stream_literal): Increment the stream buffer by the
+	number of bytes we read into the literal.
+
+2006-04-14  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/mbox/spruce-mbox-summary.c
+	(spruce_mbox_summary_flags_decode): Properly decode the X-Spruce
+	header value (the uid is in hex, not base10).
+	(mbox_summary_load): Make sure the frompos of the first message is
+	0 or we have a corrupt mbox.
+
+2006-04-04  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-summary.c (decode_envelope): Decode
+	the message-id nstring before setting the value on the
+	message-info so that the message-id is in its canonical form (same
+	as the ones in the references). This is important for message
+	threading to work properly.
+
+	* providers/imap/spruce-imap-store.c (imap_reconnect): Don't try
+	and authenticate if the engine is already in the authenticated
+	state.
+
+2006-03-03  Jeffrey Stedfast  <fejj@novell.com>
+
+	* spruce-url.c (spruce_url_parse_string): When decoding the host
+	portion of the URL, allow a '.' at the end of the hostname.
+
+2006-02-17  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/pop/spruce-pop-store.c (pop_try_authenticate): Set an
+	error if we expect to retry authentication (just like the IMAP
+	change below).
+	(pop_connect): Free the passwd before retrying.
+
+	* providers/imap/spruce-imap-store.c (imap_reconnect): Free the
+	passwd before retrying to authenticate so the user is prompted
+	again.
+	(imap_try_authenticate): If we didn't get an OK response, set an
+	error saying "Bad password".
+
+2006-02-14  Jeffrey Stedfast  <fejj@novell.com>
+
+	* spruce-sasl-gssapi.c (gssapi_challenge): Updated to use
+	spruce_getaddrinfo()
+
+	* spruce-sasl-digest-md5.c (digest_md5_challenge): Updated to use
+	spruce_getaddrinfo()
+
+	* providers/smtp/spruce-smtp-transport.c (smtp_helo): Reworked to
+	use spruce_getnameinfo().
+
+	* spruce-service.c (spruce_getnameinfo): New function to remove
+	the need for spruce_gethost*() functions which have been
+	deprecated.
+
+2005-06-30  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_open): Use the new
+	SPRUCE_FOLDER_MODE_READ (no longer named READ_ONLY)
+
+	* spruce-folder.c (spruce_folder_append_message): If a folder is
+	opened in read-only mode, don't allow appends.
+
+	* providers/imap/spruce-imap-folder.c (imap_append_message): The
+	UIDPLUS extension doesn't give a "UID APPEND" command, instead it
+	just provides the APPENDUID RESP-CODE, so no need to
+	conditionalise the command-creation code here. Simply always send
+	"APPEND ..."
+	(imap_sync): We can sync flags in READ-ONLY mode, we just can't
+	EXPUNGE. The flag syncing really only depends on the
+	permanent_flags.
+
+	* providers/imap/spruce-imap-summary.c (imap_summary_fetch_all):
+	Can't use the ALL macro in conjunction with other FETCH items, so
+	fixed to explicitly list which items we want.
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_select_folder): Use the new
+	SPRUCE_FOLDER_MODE_READ (no longer named READ_ONLY)
+
+2004-11-02  Jeffrey Stedfast  <fejj@novell.com>
+
+	* providers/imap/spruce-imap-summary.c (envelope_decode_address):
+	Handle literal strings and do proper error cleanup.
+	(envelope_decode_date): Same.
+	(envelope_decode_nstring): Same.
+
+	* providers/imap/spruce-imap-stream.c
+	(spruce_imap_stream_next_token): Handle the \* case properly.
+
+2004-10-20  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/pop/spruce-pop-store.c (connect_to_server_wrapper):
+	Simplified by using spruce_getaddrinfo().
+
+	* providers/smtp/spruce-smtp-transport.c
+	(connect_to_server_wrapper): Simplified by using
+	spruce_getaddrinfo().
+
+	* spruce-sasl-kerberos4.c (kerberos4_challenge): Updated to use
+	spruce_getaddrinfo().
+
+	* spruce-service.c (spruce_service_addrinfo): New function to
+	replace spruce_service_hostent() for IPv6 functionality.
+	(spruce_getaddrinfo): Same idea.
+	(spruce_freeaddrinfo): Same.
+
+2004-10-19  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/pop/spruce-pop-store.c (connect_to_server_wrapper):
+	Use getaddrinfo() to do host resolution.
+	(connect_to_server): Now takes a struct addrinfo argument.
+
+	* spruce-tcp-stream-ssl.c (socket_connect): Same as raw changes.
+	(tcp_connect): Same.
+
+	* spruce-tcp-stream-raw.c (socket_connect): Simplified. Now takes
+	a struct addrinfo.
+	(tcp_connect): Updated to take a struct addrinfo. Loop over all
+	addrinfo's.
+
+	* spruce-tcp-stream.c (spruce_tcp_stream_connect): Now takes an
+	addrinfo argument rather than hostent & port.
+
+	* providers/imap/spruce-imap-store.c (spruce_imap_store_init):
+	Init the engine here.
+	(connect_to_server): Simplified. Also now gets passed struct
+	addrinfo rather than hostent for IPv6 compat.
+	(connect_to_server_wrapper): Modified to work for IPv6.
+	(imap_reconnect): Moved all the logic from imap_connect() into
+	here.
+	(imap_connect): Call imap_reconnect().
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_finalize): Don't unref the session or url
+	objects anymore.
+	(spruce_imap_engine_new): Changed to take a Service and a
+	reconnect callback rather than a Session and URL.
+	(spruce_imap_engine_iterate): Reconnect if needed.
+
+	* providers/imap/spruce-imap-summary.c (imap_summary_fetch_all):
+	Set the envelope array size here to be more efficient (by avoiding
+	reallocs).
+	(imap_summary_fetch_flags): Same.
+
+2004-06-30  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_sync_flag): Updated.
+	(imap_xfer_messages): Updated.
+
+	* providers/imap/spruce-imap-utils.c (spruce_imap_get_uid_set):
+	Moved here from spruce-imap-folder.c and made public.
+
+2004-06-18  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_list_or_lsub): Sort
+	and remove duplicates from the LIST response.
+
+2004-06-17  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_get_uid_set): Fixed to
+	always get ranges right. Itw as sometimes screwing up before :-\
+	(uidset_init): init tail->last to (guint32) -1, so that index =
+	tail->last + 1 will start at 0 at the top of uidset_add() :-)
+
+2004-06-16  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-summary.c: Added a 'first' member to
+	the imap_fetch_all_t struct so we can use that as a base offset in
+	our GPtrArray, allowing us to limit resource consumption which
+	could otherwise get quite large. Also added a ChangeInfo member
+	that was needed for changes to untagged_fetch_all().
+	(imap_fetch_all_add): Use fetch->first as a base offset and change
+	int i to guint32 i. Also updated to sue the fetch->changes.
+	(imap_fetch_all_update): Same.
+	(untagged_fetch_all): Same - this is where it is really valuable,
+	since we can avoid adding elements to the GPtrArray that we won't
+	even use. Also needed to change code a big in case index <
+	fetch->first (which could happen if a server notified us of a
+	FLAGS change for a message we didn't request info about).
+	(imap_fetch_all_free): Free the ChangeInfo.
+	(imap_summary_fetch_all): Init fetch->changes and fetch->first.
+	(imap_summary_fetch_flags): Same.
+	(spruce_imap_summary_flush_updates): Only request envelope info if
+	first <= summary->exists. Avoids needless queries.
+	(info_uid_sort): #if 0'd
+	(spruce_imap_summary_flush_updates): No need to sort the summary -
+	this should never have been needed. I can't remeber why I did
+	this...
+
+2004-06-16  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/smtp/spruce-smtp-transport.c
+	(connect_to_server_wrapper): Removed unused variable.
+	(smtp_connect): s/remove_password/remove_passwd/
+	(smtp_send): Comment out a function call that hasn't been
+	implemented yet.
+	(smtp_auth): s/read_line/readln/
+	(prepare_part): Remove an unused variable.
+	(smtp_send): Removed an unused variable.
+
+	* providers/sendmail/spruce-sendmail-provider.c: #include
+	<string.h>
+
+	* providers/smtp/spruce-smtp-provider.c: #include <string.h>
+
+	* providers/sendmail/spruce-sendmail-transport.c (sendmail_send):
+	Removed unused variable.
+
+	* providers/pop/spruce-pop-store.c: #include <ctype.h> and md5-utils.h
+	(connect_to_server_wrapper): Removed unused variable.
+	(pop_try_authenticate): Removed unused variable.
+	(pop_connect): Removed unused variable.
+
+	* providers/pop/spruce-pop-folder.c: #include <stdlib.h>
+	(pop_get_url): Removed, no longer needed.
+	(pop_open): Removed unused variable.
+	(pop_sync): Removed unused variable.
+
+	* providers/pop/spruce-pop-engine.c: #include <stdlib.h>
+
+	* providers/pop/spruce-pop-provider.c: #include <string.h>
+
+	* providers/maildir/spruce-maildir-utils.c: #include <string.h>
+
+	* providers/maildir/spruce-maildir-summary.c: #include <string.h>
+	(maildir_summary_load_cb):
+	s/g_object_write_to_stream/g_mime_object_write_to_stream/
+
+	* providers/maildir/spruce-maildir-store.c: #include <string.h>
+
+	* providers/maildir/spruce-maildir-provider.c: #include <string.h>
+
+	* providers/maildir/spruce-maildir-folder.c
+	(spruce_maildir_folder_new): Removed an unused variable.
+	(maildir_rename): Removed an unused variable.
+	(maildir_expunge): Removed an unused variable.
+	(maildir_get_message): Removed an unused variable.
+	(maildir_append_message): Fixed uname() code and init fd to -1.
+
+	* providers/mbox/spruce-mbox-summary.c: #include <string.h>
+	(parser_got_status): Use g_ascii_strcasecmp()
+	(mbox_summary_load): Return error if we don't have the mbox path.
+
+	* providers/mbox/spruce-mbox-store.c: #include <string.h>
+
+	* providers/mbox/spruce-mbox-provider.c: #include <string.h>
+
+	* providers/mbox/spruce-mbox-folder.c: #include spruce-file-utils.h
+	(list_subdirs): Fixed a bad type-o. very bad.
+	(mbox_list): Fixed a very similar bad type-o.
+
+	* spruce-url.c (spruce_url_set_protocol): Removed unused variable.
+	(spruce_url_to_string): Removed unused variables.
+	(spruce_url_parse_string): Use == in the assert.
+
+	* spruce-transport.c (spruce_transport_finalize): Removed unused
+	variable.
+
+	* spruce-tcp-stream-ssl.c: #include "spruce-file-utils.h"
+	(socket_connect): Removed unused variable.
+
+	* spruce-tcp-stream-raw.c (socket_connect): Remove unused
+	variable.
+
+	* spruce-tcp-stream.c: #include <string.h>
+	(tcp_setsockopt): Return error (-1).
+
+	* spruce-store.c: #include <string.h>
+
+	* spruce-service.c: #include <string.h> for memcpy().
+
+	* spruce-sasl-digest-md5.c: #include a bunch more headers.
+	(spruce_sasl_digest_md5_class_init): Register the finalize func.
+	(decode_data_type): Use g_ascii_strcasecmp()
+	(parse_server_challenge): Same.
+
+	* spruce-sasl-cram-md5.c: #include <stdio.h> for sprintf
+
+	* spruce-provider.c: #include <string.h>
+	(spruce_provider_register): Got rid of an unused variable.
+
+	* spruce-folder-summary.c: #include <string.h>
+	(next_uid_string): Return the string.
+
+	* spruce-folder-search.c: #include <string.h>
+	(system_flag): Return res.
+
+	* spruce-folder.c: #include <string.h>
+
+2004-06-15  Jeffrey Stedfast  <fejj@ximian.com>
+
+	A malloc/free optimisation. No sense malloc/freeing a metric ton
+	of times for a common case of ungetting tokens.
+
+	* providers/imap/spruce-imap-stream.c (spruce_imap_stream_init):
+	Init have_unget to FALSE. Don't set unget to NULL, it's no longer
+	a pointer.
+	(spruce_imap_stream_next_token): Check have_unget rather than
+	unget != NULL. Set have_unget to FALSE if we get an unget'd token.
+	(spruce_imap_stream_unget_token): Don't malloc space for an unget
+	token. The unget token is no longer a pointer.
+
+2004-06-12  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-summary.c (imap_fetch_all_add): Emit
+	the new folder-changed signal with the set of changes.
+	(imap_fetch_all_update): Same here.
+	(spruce_imap_summary_set_uidvalidity): If the summary contained
+	messages, emit a folder-changed event to let our UI know that
+	they've all been removed.
+	(spruce_imap_summary_expunge): Emit a folder-changed event for the
+	expunged message.
+
+	* spruce-folder.c (spruce_folder_change_info_new): New function.
+	(spruce_folder_change_info_clear): New.
+	(spruce_folder_change_info_free): New.
+	(spruce_folder_change_info_changed): New.
+	(spruce_folder_change_info_add_uid): New.
+	(spruce_folder_change_info_change_uid): New.
+	(spruce_folder_change_info_remove_uid): New.
+
+	* providers/imap/spruce-imap-summary.c
+	(spruce_imap_summary_flush_updates): Instead of updating flags if
+	update_flags or exists_changed is set, only bother if update_flags
+	is set or if exists is smaller than the summary count (since
+	updating flags is also sueful for determining which messages have
+	been removed).
+	(spruce_imap_summary_set_exists): Don't bother with
+	exists_changed. We don't need it afterall.
+	(spruce_imap_summary_flush_updates): Only fetch summary info if
+	exists > our current summary count.
+
+2004-06-12  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-summary.c (envelope_decode_address):
+	Decode the email address name token and use GMime's
+	internet-address APIs to properly format it.
+	(envelope_decode_nstring): Optionally rfc2047 decode the text.
+	(decode_envelope): rfc2047 decode the subject.
+	(spruce_imap_summary_set_exists): Only set exists_changed if the
+	values are different.
+	(spruce_imap_summary_flush_updates): Improved the logic a
+	bit. Allow a force-update of flags if the bit is set. Also only
+	bother fetching envelope info if exists > 0.
+	(spruce_imap_summary_expunge): Use seqid-1 for the summary index.
+
+	* providers/imap/spruce-imap-folder.c (untagged_fetch): Handle
+	getting FLAGS even though we didn't request it (server can send us
+	FLAGS info if another client changed them recently, for
+	example). Also fixed to handle the fact that not every bit of info
+	has to be in a single untagged FETCH response - it may come in
+	several untagged responses.
+
+2004-06-11  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_sync): Flush updates
+	after an EXPUNGE and don't unset expunge if we didn't delete
+	anything (the logic was wrong anyway).
+
+2004-06-10  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_handle_untagged_1): Don't always try and parse
+	a RESP-CODE in the BYE case as the RESP-CODE is optional.
+
+	* spruce-service.c (spruce_hostent_free): Don't leak the lists.
+
+	* spruce-provider.c (spruce_provider_shutdown): New function to
+	free internal list/hash structures and provider plugin memory.
+	(spruce_provider_load): Save the pointer to the GModule.
+
+	* providers/imap/spruce-imap-engine.c (engine_parse_status):
+	Removed.
+	(spruce_imap_engine_handle_untagged_1): Don't use our own STATUS
+	handler. Let the STATUS requestor handle them instead.
+
+	* providers/imap/spruce-imap-utils.c
+	(spruce_imap_untagged_status): New untagged callback function to
+	parse untagged STATUS events.
+
+2004-05-01  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-summary.c (imap_fetch_all_add): Don't
+	try to continue if we can't find an untagged FETCH response for a
+	particular message that should have been included.
+	(imap_fetch_all_update): Same.
+
+2004-04-14  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-folder.c (untagged_fetch): Don't
+	check for "BODY[]" anymore since "]" will now be its own token.
+
+2004-03-27  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/pop/spruce-pop-provider.c: Define the password and
+	apop authmechs.
+
+	* providers/pop/spruce-pop-engine.c (spruce_pop_engine_finalize):
+	No longer need to g_free the keys for the authmechs since we now
+	just use authmech->authproto as the key.
+	(sasl_parser): Use auth->authproto as the hash table key.
+	(spruce_pop_engine_init): Default capa to pretend we have USER
+	capability.
+	(auth_free): No longer need to g_free the key.
+
+	* providers/pop/spruce-pop-store.c (pop_noop): Implemented.
+	(sasl_cmd): Implemented.
+	(pop_query_auth_types): Implemented.
+
+	* spruce-store.c (spruce_store_noop): New method (mostly meant as
+	a place for POP/IMAP to implement respective NOOP commands as a
+	means of resetting the idle timeout).
+
+2004-03-25  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-store.c (imap_connect): Oops, use
+	errmsg as the error message string we pass to try_authenticate()
+	instead of lerr->message, since lerr will alsways be NULL
+	here. :-)
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_parse_resp_code): No longer need to split ']'
+	tokens from atom tokens due to a fixup in the ABNF grammar in
+	rfc3501.
+
+	* providers/imap/spruce-imap-specials.c: Changed ATOM_SPECIALS to
+	include ']' (this is an addition in rfc3501).
+
+2004-03-24  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-specials.c: #include <string.h>
+
+	* providers/imap/spruce-imap-folder.c: #include <stdlib.h> and get
+	rid of some unused variables.
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_literal): New function.
+	(engine_parse_status): Handle mailbox literals.
+
+	* providers/imap/spruce-imap-command.c (spruce_imap_command_newv):
+	Changed the way %L works.
+
+2004-03-23  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-string-utils.c (spruce_base64_encode_simple): Fixed.
+
+	* providers/imap/spruce-imap-store.c (sasl_auth): Implemented.
+
+	* spruce-file-utils.c (spruce_rmdir): New function to rm -rf a
+	dir.
+
+	* providers/imap/spruce-imap-folder.c (imap_rename): Fixed to
+	update the summary file location and the cachedir location.
+	(imap_newname): Implemented.
+
+	* providers/maildir/spruce-maildir-folder.c (maildir_newname):
+	Implemented.
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_newname): Implemented.
+
+	* spruce-folder.c (spruce_folder_construct): Connect to the
+	"renamed" signal and fixed the "deleting" signal callback.
+	(spruce_folder_newname): New private function to notify a folder
+	that it has been renamed.
+	(folder_newname): New default implementation.
+
+2004-03-21  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_append_message): Only
+	use the APPENDUID resp code if the summary for the folder is
+	loaded, otherwise it's a waste.
+	(imap_copy_messages): Implemented.
+	(imap_move_messages): Implemented.
+
+	* providers/imap/spruce-imap-summary.c (imap_fetch_all_add): Check
+	that we don't already have the message info before adding it.
+	(spruce_imap_summary_flush_updates): Sort the summary array when
+	we're done just to make sure the UIDs are all in sequential order.
+
+2004-03-21  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-utils.c
+	(spruce_imap_parse_flags_list): Fixed to save the "Forwarded" flag
+	bit.
+
+	* providers/imap/spruce-imap-summary.c (imap_header_save): Only
+	save the uidvalidity.
+	(imap_header_load): Only load the uidvalidity.
+	(imap_summary_load): no-op here. The summary will get loaded
+	later, when the folder gets SELECTed.
+	(spruce_imap_summary_set_exists): Set exists_changed to TRUE.
+	(spruce_imap_summary_set_uidvalidity): Set uidvalidity_changed to
+	TRUE.
+	(spruce_imap_summary_flush_updates): Sync back up with the server
+	(get any FLAGS changes and fetch any new message envelopes).
+
+	* providers/imap/spruce-imap-folder.c
+	(spruce_imap_folder_class_init): Don't overload get_message_count
+	or get_unread_message_count anymore, the parent class
+	implementation does everything we want.
+	(spruce_imap_folder_new): Don't g_free (path) until after we've
+	called construct on the folder.
+	(imap_open): Rewritten. Load the summary first, then SELECT the
+	folder, and then flush any outstanding summary updates (forces the
+	summary to sync back up with the server).
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_dequeue): New function to de-queue a command.
+
+2004-03-21  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-folder.c (folder_close): Instead of freeing the summary,
+	simply unload it.
+	(folder_get_unread_message_count): Return the cached unread count
+	if the folder summary isn't loaded.
+
+	* spruce-service.c (hostent_copy): Allocate n+1 addrs for the
+	h_addr_list so we can NULL terminate the array.
+
+	* spruce-folder-summary.c (spruce_folder_summary_unload): New
+	function to unload the message info's (basically restores the
+	summary to the header_loaded state).
+	(message_info_save): Save the new sender/reply_to/bcc info
+	strings.
+	(message_info_load): Load the new sender/reply_to/bcc info
+	strings.
+	(message_info_new_from_message): Init the new sender/reply_to/bcc
+	info strings.
+	(spruce_folder_summary_touch): Implemented.
+	(spruce_folder_summary_save): Don't save the the summary isn't
+	dirty.
+	(spruce_folder_summary_load): Set
+	summary->loaded to TRUE once we've successfully completed.
+
+2004-03-19  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_append_message):
+	Implemented.
+
+	* providers/imap/spruce-imap-utils.c (spruce_imap_untagged_list):
+	Handle literals for the mailbox token. Also fixed to handle NIL as
+	a path delimeter token. Use the utility function to set the
+	"unexpected token" error too.
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_handle_untagged_1): Handle literals for
+	unregistered untagged events.
+	(spruce_imap_engine_eat_line): New function to eat tokens until it
+	gets to an '\n' token.
+
+	* spruce-imap-stream.c (spruce_imap_stream_read_literal): Removed.
+	(spruce_imap_stream_literal): New function that works like
+	spruce_imap_stream_line() but for literal mode.
+
+2004-03-19  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-folder-summary.h: Fixed the masks a bit.
+
+	* providers/imap/spruce-imap-folder.c (imap_close): Implemented.
+	(imap_sync): Implemented.
+	(imap_expunge): Implemented.
+
+	* providers/imap/spruce-imap-engine.c: Now holds another bit of
+	state concerning the max line-length or max token-length the imap
+	server can handle (eg. Courier has a max token size limit (~16k)
+	but no actual max command length, whereas uw.imapd has no token
+	length limit per-se but caps the max command length at 8000
+	bytes). This is more for cheating than anything else and by
+	default uses the recommended max-line-length of 1000 bytes.
+
+	* providers/imap/spruce-imap-summary.c (imap_build_summary):
+	Change our request to include RFC822.SIZE by using the ALL macro
+	which expands to "(FLAGS INTERNALDATE RFC822.SIZE ENVELOPE)".
+
+2004-03-17  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-stream.c
+	(spruce_imap_stream_next_token): Decode number tokens separately
+	from atom tokens.
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_handle_untagged_1): Restructured a bit to work
+	with NUMBER tokens.
+	(spruce_imap_engine_parse_resp_code): Same.
+
+	* providers/imap/spruce-imap-utils.c
+	(spruce_imap_utils_set_unexpected_token_error): Handle more token
+	types.
+
+	* providers/imap/spruce-imap-summary.c (envelope_untagged): Same
+	as below.
+
+	* providers/imap/spruce-imap-folder.c (untagged_fetch): Updated
+	for NUMBER token change.
+
+2004-03-17  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_parse_resp_code): Parse the APPENDUID
+	RESP-CODE as defined by the UIDPLUS extension (rfc2359).
+	(spruce_imap_engine_parse_resp_code): Parse the COPYUID RESP-CODE
+	extension too.
+	(spruce_imap_resp_code_free): Free the COPYUID src/dest sets.
+
+2004-03-17  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-folder.c (imap_get_message):
+	Implemented.
+
+	* providers/imap/spruce-imap-stream.c (stream_read): Once we've
+	finished reading the literal, set the mode back to TOKEN.
+	(spruce_imap_stream_read_literal): Same.
+	(spruce_imap_stream_init): Set our bound_end to -1.
+
+	* spruce-tcp-stream.c (spruce_tcp_stream_init): Set bound_end to
+	-1.
+
+	* providers/imap/spruce-imap-summary.c
+	(imap_summary_add_envelopes): Don't forget to give our fake
+	message-0info's a fake uid.
+
+	* spruce-folder-summary.c (spruce_folder_summary_load): If opening
+	the summary file fails, generate a summary.
+
+	* providers/imap/spruce-imap-stream.c
+	(spruce_imap_stream_next_token): Fixed a bug in the qstring
+	tokeniser.
+
+2004-03-16  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-summary.c (imap_summary_load):
+	Implemented.
+
+	* providers/imap/spruce-imap-utils.c (spruce_imap_untagged_list):
+	Updated to take an index argument (which is ignored).
+	(spruce_imap_utils_set_unexpected_token_error): New.
+	(spruce_imap_parse_flags_list): New.
+
+	* providers/imap/spruce-imap-command.h: Added an index argument to
+	the untagged callback function (needed for commands like FETCH).
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_iterate): Update engine state if appropriate
+	and also handle failure of pre-queued SELECT command.
+	(spruce_imap_engine_handle_untagged_1): Set the DISCONNECTED state
+	when a BYE event is intercepted.
+
+2004-03-15  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_parse_resp_code): Fixed to handle unknown
+	RESP-CODEs.
+
+2004-03-14  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-session.c (spruce_session_get_storage_path): New function
+	to return a storage path (needed by imap).
+
+	* providers/imap/spruce-imap-summary.[c,h]: New source files
+	implementing an IMAP summary.
+
+	* providers/imap/spruce-imap-folder.c
+	(imap_get_unread_message_count): Implemented by returning the
+	cached unseen value stored on the imap summary.
+	(imap_get_message_count): Returns the imap summary exists value.
+	(imap_open): Implemented.
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_iterate): Unref the IMAP command when we're
+	done.
+	(engine_prequeue_folder_select): New function to peek ahead at the
+	next imap command to see if we need to prequeue a SELECT command
+	and prequeues one if appropriate.
+	(spruce_engine_parse_resp_code): Conditionally save the response
+	code on the IMAP command.
+	(spruce_imap_engine_select_folder): New function to select a
+	folder.
+
+	* providers/imap/spruce-imap-command.c
+	(spruce_imap_command_unref): Free the resp codes.
+	(spruce_imap_command_reset): Reset the resp codes.
+	(spruce_imap_command_newv): Init the resp codes.
+
+2004-03-13  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/pop/spruce-pop-stream.c: Fixed some setting of
+	disconnected state.
+
+	* providers/imap/spruce-imap-specials.[c,h]: New source files
+	containing tables meant for classifying IMAP tokens.
+
+	* providers/imap/spruce-imap-store.c (imap_disconnect):
+	Implemented.
+	(imap_connect): Send NAMESPACE after successful authentication.
+	(connect_to_server): Don't send NAMESPACE here, need to wait until
+	we are authenticated.
+
+	* providers/imap/spruce-imap-utils.c (spruce_imap_untagged_list):
+	New function to parse LIST/LSUB responses.
+
+	* providers/imap/spruce-imap-engine.c (engine_parse_namespace):
+	Fixed.
+	(spruce_imap_engine_handle_untagged_1): If we encounter an
+	untagged response that matches a registered handler, run the
+	handler.
+
+	* providers/imap/spruce-imap-command.c
+	(spruce_imap_command_register_untagged): New function to register
+	untagged response handlers for a particular command.
+
+	* providers/imap/spruce-imap-stream.c
+	(spruce_imap_stream_next_token): Updated to use the imap_specials
+	table as well as handling a new type of token FLAG which is
+	defined as '"\" atom'.
+
+	* providers/imap/spruce-imap-folder.c (spruce_imap_folder_new):
+	Implemented.
+	(imap_create): Implemented.
+	(imap_delete): Implemented.
+	(imap_rename): Implemented.
+	(imap_list): Implemented.
+	(imap_lsub): Implemented.
+	(imap_subscribe): Implemented.
+	(imap_unsubscribe): Implemented.
+
+	* spruce-folder.c (spruce_folder_rename): Set the
+	folder->full_name and folder->name on success.
+	(spruce_folder_delete): Set folder->exists to FALSE on success.
+	(spruce_folder_create): Set folder->exists to TRUE on success.
+	(spruce_folder_subscribe): Set folder->is_subscribed to TRUE on
+	success.
+	(spruce_folder_unsubscribe): Set folder->is_subscribed to FALSE on
+	success.
+
+	* providers/maildir/spruce-maildir-folder.c (maildir_rename):
+	Removed an old FIXME that is no longer relevant.
+
+2004-03-12  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-sasl*.[c,h]: s/Sasl/SASL/g
+
+	* providers/pop/spruce-pop-store.c: s/Sasl/SASL/g
+
+	* providers/smtp/spruce-smtp-transport.c: s/Sasl/SASL/g
+
+2004-03-12  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/smtp/spruce-smtp-transport.c (smtp_set_error): Now
+	takes a disconnect arg that tells us if it is safe to call
+	spruce_service_disconnect() when respbuf is NULL (otherwise we
+	just set our state to disconnected).
+	(smtp_disconnect): Set connected state to FALSE.
+	(connect_to_server): Set connected state to TRUE after we've
+	connected. Instead of checking service->connected later, check our
+	own private connected state.
+
+	* spruce-transport.c (spruce_transport_send): If the transport
+	isn't connected, set an error and return.
+
+	* providers/smtp/spruce-smtp-transport.c (smtp_helo): If
+	read/write fails, force a disconnect using
+	spruce_service_disconnect() rather than simply unreffing the
+	streams.
+	(smtp_mail): Same.
+	(smtp_rcpt): Same.
+	(smtp_data): Same.
+	(smtp_rset): Same.
+	(smtp_quit): Don't bother disconnecting here since our caller is
+	the disconnect code :-)
+
+	* providers/maildir/spruce-maildir-folder.c (maildir_get_url):
+	Removed.
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_get_url): Removed (no
+	longer needed).
+
+	* spruce-folder.c (folder_get_url): Implemented.
+	(spruce_folder_get_url): Now returns a SpruceURL rather than a
+	string.
+	(spruce_folder_get_uri): New function to return the string version
+	of spruce_folder_get_url().
+
+	* spruce-url.c (spruce_url_copy): New function to copy a CamelURL
+	structure.
+
+2004-03-08  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-lock.[c,h]: New source files implementing file locking.
+
+2004-03-07  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-engine.c
+	(spruce_imap_engine_pending): Removed.
+	(spruce_imap_engine_iterate): Modified to work a bit more like the
+	POP version.
+	(spruce_imap_engine_queue_command): Removed.
+	(spruce_imap_engine_prequeue_command): Removed.
+	(spruce_imap_engine_namespace): New function to force a NAMESPACE
+	query.
+
+2004-03-05  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/pop/spruce-pop-folder.c (list_cmd): Check for ".\r\n"
+	(uidl_cmd): Same.
+
+	*before* trying to parse the line.
+
+	* providers/pop/spruce-pop-engine.c (pop_read_line): Fixed cases
+	where multiple calls to spruce_pop_stream_line() were called.
+
+	* providers/pop/spruce-pop-stream.c (spruce_pop_stream_line): Only
+	fill our buffer if we've got fewer than 3 bytes remaining.
+
+	* spruce-url.c (spruce_url_parse_string): Don't let url->port be
+	-1.
+
+	* spruce-provider.c (spruce_provider_get): Set an error if the
+	module didn't register a provider for the protocol.
+
+	* spruce-service.c (hostent_copy): Don't forget to alloc n+1 array
+	elements (one for the terminating NULL element).
+
+2004-03-05  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-tcp-stream-raw.c (spruce_tcp_stream_raw_new): New
+	function to create a new raw tcp stream (oops).
+
+	* providers/pop/spruce-pop-store.c (sasl_cmd): Finished
+	implementing.
+
+	* providers/pop/spruce-pop-folder.[c,h]: New source files
+	implementing the SpruceFolder class for POP3.
+
+2004-03-04  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/pop/spruce-pop-store.c (connect_to_server): Set our
+	own error if spruce_pop_engine_iterate() returns -1.
+	(pop_try_authenticate): Same.
+	(pop_disconnect): Implemented.
+
+	* spruce-folder.c (folder_set_message_flags): Set the
+	SPRUCE_MESSAGE_DIRTY bit on any changed info flags.
+	(folder_get_message_flags): Don't return the dirty bit.
+
+2004-03-03  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/pop/spruce-pop-provider.c: New source file
+	implementing a POP provider.
+
+	* providers/pop/spruce-pop-store.[c,h]: New source files
+	implementing a POP store.
+
+	* providers/pop/spruce-pop-engine.[c,h]: New source files to
+	implement a POP engine.
+
+	* providers/pop/spruce-pop-stream.[c,h]: New source files to
+	implement a POP stream.
+
+2004-02-29  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/smtp/spruce-smtp-transport.c (smtp_connect): Move the
+	parent connect call into here.
+	(connect_to_server_wrapper): Move host lookup code into here.
+	(connect_to_server): If priv->authtypes is non-NULL, free the
+	authtypes hash and set to NULL.
+
+2004-02-29  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/smtp/spruce-smtp-provider.c
+	(spruce_provider_module_init): Only offer the SMTP/S protocol if
+	SSL is available.
+
+	* providers/sendmail/spruce-sendmail-transport.[c,h]: New
+	transport provider for the system's local Sendmail program.
+
+	* spruce-process.[c,h]: New source files stolen from my other
+	project, Alleyoop, to manage forking/execing another process.
+
+	* providers/smtp/spruce-smtp-transport.c (smtp_send): Handle
+	sending to rfc822 groups as well.
+
+	* spruce-transport.c (spruce_transport_send): Change the check for
+	invalid sender from a g_return_val_if_fail() into code that sets a
+	GError if the from address isn't of the proper type (or empty).
+
+	* providers/smtp/Makefile.am: Oops. Add spruce-smtp-provider.c to
+	the build.
+
+	* providers/smtp/spruce-smtp-transport.h: Fixed macro casts (it's
+	SMTP nto Smtp).
+
+2004-02-28  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/smtp/spruce-smtp-transport.c (prepare_message):
+	Implemented. Prepares a part to be sent out over the 'net
+	(calculates the best charset and/or Content-Transfer-Encoding for
+	the part given the restrictions of the SMTP server). Also removes
+	headers like Bcc and Resent-Bcc.
+
+2004-02-28  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_get_message):
+	Doh. Assert that frompos > -1 (not > 0) since the first frompos
+	*will* be 0.
+
+	* spruce-url.c (spruce_url_set_path): Canonicalise the path before
+	using it.
+	(spruce_url_parse_string): Canonicalise the path component here
+	too.
+
+	* spruce-folder-summary.c (spruce_folder_summary_load): Don't try
+	to load more summary items than there are.
+	(message_info_load): Use g_try_malloc() here when trying to decode
+	references, this way if it fails we can recover.
+
+	* providers/maildir/spruce-maildir-summary.c
+	(maildir_header_load): Same as mbox.
+	(maildir_summary_save): Same as mbox.
+
+	* providers/mbox/spruce-mbox-summary.c (mbox_header_load): Compare
+	the summary timestamp with the mbox file's mtime.
+	(mbox_summary_save): Set the mbox file's mtime to the summary
+	timestamp when done writing.
+
+	* spruce-file-utils.c: s/G*INT*_TO_LE/G*INT*_FROM_BE/g
+	(spruce_file_util_encode_string): Fixed to
+	encode len as a size_t and also to not write the address of the
+	string, but the string itself.
+	(spruce_file_util_decode_string): Fixed to use size_t for the
+	len. Also use g_try_malloc here in case len is too large, this way
+	we can recover.
+
+	* spruce-tcp-stream-ssl.c (stream_write): Use spruce_write() in
+	the non-ssl case.
+	(stream_read): Use spruce_read() in the non-ssl case.
+
+	* spruce-tcp-stream-raw.c (stream_read): Use spruce_read().
+	(stream_write): Use spruce_write().
+
+	* providers/mbox/spruce-mbox-summary.c (mbox_message_info_save):
+	Use spruce_write() to write the flags (also fixes an infinite
+	loop).
+
+	* spruce-file-utils.c (spruce_read): New function to handle reads
+	(does proper error checking etc).
+	(spruce_write): New function to handle writes (writes all data or
+	fails).
+
+	* spruce-folder-summary.c (header_save): Fixed a type-o.
+
+2004-02-27  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-folder-summary.c (message_info_new_from_message): Don't
+	try to parse the References/In-Reply-To headers if they doesn't
+	exist.
+	(summary_add): Don't ref the SpruceMessageInfo here, instead we
+	assume we get to take ownership of the MessageInfo at this point.
+	(message_info_load): Load the number of lines.
+	(message_info_save): Save the number of lines.
+
+	* spruce-folder.c (spruce_folder_open): Fixed a paren placement
+	type-o.
+
+	* providers/maildir/spruce-maildir-folder.c (maildir_open): Load
+	the summary.
+	(spruce_maildir_folder_new): Instantiate a summary object and load
+	the summary header.
+	(maildir_summary_load_cb): Parse flags/uid first, and free the uid
+	before exiting on error.
+	(maildir_summary_load_cb): Calculate the message size and count
+	the newlines.
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_open): Load the
+	summary.
+	(spruce_mbox_folder_new): Instantiate a summary object and load
+	the summary header.
+	(mbox_summary_load): Calculate the number of new-lines in the
+	message as well as set the message-size on the SpruceMessageInfo.
+
+2004-02-27  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-folder.c (folder_get_uids): Return NULL if the number of
+	messages is 0.
+
+	* providers/mbox/spruce-mbox-summary.c
+	(spruce_mbox_summary_get_type): Our parent type is a
+	SpruceFolderSummary, not a GObject.
+
+	* spruce-provider.c (spruce_provider_load): Initialise the module
+	before using it, duh.
+
+	* providers/maildir/spruce-maildir-folder.c (maildir_search): Same
+	as with mbox.
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_create_from_line):
+	s/g_string_sprintfa/g_string_append_printf/
+	(mbox_search): Use spruce_folder_summary_info_unref() instead of
+	spruce_message_info_unref().
+	(mbox_append_message): Fixed a type-o.
+
+	* spruce-provider.c (spruce_provider_scan_modules): Don't hash the
+	last element of the protocols array (it's a NULL). Also, don't
+	change the filename suffix until after we've opened the .urls
+	file.
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_get_message): Fixed
+	calls to spruce_folder_summary_info_unref().
+
+	* spruce-folder-summary.c (spruce_folder_summary_header_save): New
+	function to only save a summary header (for consistancy mostly).
+	(header_save): Implemented.
+	(header_load): Updated to decode cached unread and deleted counts.
+	(spruce_folder_summary_info_unref): Renamed.
+	(spruce_folder_summary_info_ref): Renamed.
+
+	* spruce-provider.c (spruce_provider_scan_modules):
+	s/g_ptr_array_append/g_ptr_array_add/g
+
+	* spruce-file-utils.c (spruce_file_util_encode_size_t): New
+	function to encode size_t's to a file stream.
+	(spruce_file_util_decode_size_t): New function to decode size_t's
+	from a file stream.
+
+	* spruce-folder-search.c (header_contains): Updated for
+	s/sender/from/ changes in the last commit.
+
+2004-02-26  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/maildir/spruce-maildir-summary.c: Updated the flag
+	list to know about the 'P' (Forwarded) flag.
+
+	* spruce-folder-summary.c (message_info_load): Updated to save the
+	new Message-Id and References formats (which are 64bit hashes of
+	the msg-id's rather than the full string). Also save user tags and
+	flags.
+	(message_info_save): Same.
+	(message_info_new_from_message): Same.
+	(message_info_free): No longer need to g_free() the message_id.
+	(spruce_flag_get, spruce_flag_set, spruce_flag_list_copy)
+	(spruce_flag_list_size, spruce_flag_list_free, spruce_tag_get)
+	(spruce_tag_set, spruce_tag_list_copy, spruce_tag_list_size)
+	(spruce_tag_list_free): New user tags and flags functions.
+
+2004-02-25  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-provider.c: New source file
+	implementing the necessary plugin stuff.
+
+	* providers/imap/spruce-imap-store.[c,h]: New source files
+	implementing a skeleton IMAP Store class.
+
+	* spruce-folder-summary.h: Define a SPRUCE_MESSAGE_USER mask.
+
+2004-02-25  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/mbox/spruce-mbox-folder.c (spruce_mbox_folder_new):
+	Sanity check for illegal mailbox names.
+	(mbox_rename): Sanity check here too.
+	(list_subdirs): Ignore certain filenames (meta files and backup
+	files).
+	(mbox_list): Same.
+
+2004-02-24  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/smtp/spruce-smtp-transport.c
+	(connect_to_server_wrapper): Changed to respect protocol (smtps
+	uses high ssl port, while smtp *can* use STARTTLS if param is
+	set).
+
+	* spruce-session.c (spruce_session_get_service): New function to
+	instantiate a service.
+
+	* spruce-provider.c (spruce_provider_lookup_service): Lookup
+	instantiated services by provider.
+	(spruce_provider_insert_service): Cache instantiated services by
+	provider.
+
+	* providers/smtp/spruce-smtp-provider.c: New source file
+	implementing the necessary plugin stuff.
+
+	* providers/smtp/spruce-smtp-transport.[c,h]: New source files
+	implementing an SMTP transport.
+
+	* spruce-session.c (spruce_session_request_passwd): Changed the
+	method signature a bit.
+	(spruce_session_forget_passwd): New method to forget a password.
+
+2004-02-23  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-url.c (spruce_url_get_query): New function to get the
+	query string.
+	(spruce_url_set_query): New function to set the query.
+	(spruce_url_get_param): New.
+	(spruce_url_set_param): New.
+	(spruce_url_finalize): Free the query and params.
+	(spruce_url_to_string): Output params and query components.
+	(spruce_url_parse_string): Parse params and query components.
+
+	* providers/maildir/spruce-maildir-provider.c
+	(spruce_provider_module_init): Implemented.
+
+	* providers/mbox/spruce-mbox-provider.c
+	(spruce_provider_module_init): Implemented.
+
+	* spruce.c (spruce_init): Call spruce_provider_scan_modules().
+
+2004-02-22  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-sasl-gssapi.[c,h]: New source files implementing the
+	GSSAPI (Kerberos 5) SASL mechanism.
+
+	* spruce-sasl-kerberos4.c: s/login/kerberos4/
+
+	* spruce-provider.[c,h]: New source files implementing the
+	Provider class.
+
+	* spruce-service.c (spruce_service_construct): Implemented.
+	(spruce_service_finalize): Unref the provider.
+
+	* spruce-tcp-stream-ssl.[c,h]: New source files implementing an
+	SSL stream.
+
+2004-02-13  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-error.h: Added some folder errors.
+
+	* spruce-folder.c: Changed some v.methods to take a GError
+	argument.
+
+	* providers/mbox/spruce-mbox-folder.c: Updated.
+
+	* providers/maildir/spruce-maildir-folder.c: Updated.
+
+2004-02-12  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-file-utils.c (spruce_file_util_decode_string): Don't have
+	a 64k size limitation.
+
+	* spruce-service.c (spruce_gethostbyaddr): New function.
+
+2004-02-05  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-service.c (spruce_service_hostent): New function to do a
+	host lookup on a service.
+	(spruce_gethostbyname): New function to do a host lookup.
+	(spruce_hostent_free): New function to free a hostent struct.
+
+	* spruce-transport.c (spruce_transport_send): Now takes a from
+	argument (oops, this is kinda needed ;-)
+
+2004-01-29  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-transport.c: Same.
+
+	* providers/maildir/spruce-maildir-folder.c
+	(spruce_maildir_folder_new): Same. Also set errors in some cases.
+
+	* providers/maildir/spruce-maildir-store.c: Updated.
+
+	* providers/mbox/spruce-mbox-folder.c (spruce_mbox_folder_new):
+	Updated to both take a GError arg and pass it to
+	spruce_store_get_folder().
+
+	* providers/mbox/spruce-mbox-store.c: Updated.
+
+	* spruce-store.c: Same.
+
+	* spruce-service.c: Updated to take GError arguments.
+
+2004-01-12  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-sasl-login.c (login_challenge): Same.
+
+	* spruce-sasl-plain.c (plain_challenge): Same.
+
+	* spruce-sasl-kerberos4.c (kerberos4_challenge): Same.
+
+	* spruce-sasl-digest-md5.c (digest_md5_challenge): Same.
+
+	* spruce-sasl-cram-md5.c (cram_md5_challenge): Same.
+
+	* spruce-sasl-anonymous.c (anon_challenge): Set a GError on fail.
+
+2003-12-23  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-folder.c (folder_close): Implemented a default ::close.
+	(spruce_folder_close): Sync the folder before closing.
+
+2003-12-22  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-folder.c (spruce_folder_open): Updated to use an
+	open_count (sorta like a ref_count).
+	(spruce_folder_close): Same.
+
+2003-12-15  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/mbox/spruce-mbox-folder.c (mbox_delete): Unlink the
+	summary file and recursively delete any subfolders.
+
+	* providers/maildir/spruce-maildir-folder.c (maildir_rename):
+	Fixed.
+	(maildir_delete): No longer takes a 'recurse' arg. Implemented
+	deletion of subdirs/cruft, summary file, etc.
+	(maildir_rmdir): Optimised a little.
+
+2003-12-15  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-store.c (spruce_store_get_folder): Cache folder lookups.
+
+	* spruce-folder.c (spruce_folder_rename): Changed the renamed
+	signal to pass oldname and newname arguments so that listeners can
+	more easily update their references.
+	(spruce_folder_construct): Setup common folder stuff, like parent
+	folder/store, name, full_name, and listening to their parent's
+	"deleting" signal.
+
+2003-12-08  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/maildir/spruce-maildir-folder.c: Updated.
+	(maildir_get_url): Reimplemented to set the full_name as the url
+	fragment.
+	(maildir_list): Re-implemented to assume Maildir+ format
+	(eg. Courier's Maildir format).
+
+	* providers/maildir/spruce-maildir-store.c
+	(maildir_get_folder_by_url): Use the url fragment as the folder
+	name.
+
+2003-12-07  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-folder.c (spruce_folder_expunge): Can't expunge folders
+	if they cannot contain messages.
+
+	* spruce-folder-summary.c (spruce_folder_summary_get_filename):
+	New function.
+
+	* providers/mbox/spruce-mbox-folder.c: Mimic the Mozilla directory
+	structure.
+	(mbox_get_url): Reimplemented to set the full_name as the url
+	fragment.
+
+	* providers/mbox/spruce-mbox-store.c (mbox_get_folder_by_url): Use
+	the url fragment as the folder name.
+
+	* spruce-url.c (spruce_url_to_string): Hide passwd/fragment if
+	requested.
+
+2003-12-05  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-url.c: Changed to handle url fragments and to emit a
+	changed signal when a component of the url is changed via any of
+	the set methods.
+
+	* spruce-string-utils.[c,h]: New source files.
+
+2003-05-29  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/maildir/spruce-maildir-folder.c
+	(spruce_maildir_folder_class_init): Override the virtual methods.
+
+	* spruce-folder.c (spruce_folder_class_init): Added
+	deleted/renamed/subscribed/unsubscribed signals.
+	(folder_get_message_count): Implemented.
+	(folder_get_unread_message_count): Implemented.
+	(spruce_folder_delete): Emit the deleted signal.
+	(spruce_folder_rename): Emit the renamed signal.
+	(spruce_folder_subscribe): Emit the subscribed signal.
+	(spruce_folder_unsubscribe): Emit the unsubscribed signal.
+
+	* providers/mbox/spruce-mbox-folder.c
+	(spruce_mbox_folder_class_init): Override the virtual methods.
+
+2002-09-08  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-folder-search.c (match_all): Unref the message if it was
+	fetched each time through the loop.
+	(spruce_folder_search_set_summary): Create in the summary hash.
+	(spruce_folder_search_match_all): Implemented.
+	(spruce_folder_search_match1): Implemented.
+
+	* providers/maildir/spruce-maildir-folder.c
+	(maildir_folder_search): Implemented.
+
+	* providers/mbox/spruce-mbox-folder.c
+	(mbox_folder_search): Implemented, although it could be improved
+	by not creating a new search object each time. If we saved the
+	search object, the next search *could* be super fast if it was an
+	identical search for example.
+
+2002-09-05  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/imap/spruce-imap-command.[c,h]: New source files.
+
+	* providers/imap/spruce-imap-engine.h: New header file defining an
+	Engine class (nothing implemented yet).
+
+	* providers/imap/spruce-imap-stream.[c,h]: New source files
+	implementing an imap stream parser/tokenizer.
+
+	* spruce-folder-summary.c (spruce_system_flag): New convenience
+	function to convert a string name into a bit flag.
+	(spruce_system_flag_is_set): Checks to see if the string name flag
+	is set.
+
+	* spruce-folder-search.c (system_flag): Implemented.
+
+	* spruce-service.c (spruce_service_query_auth_types): New function
+	for querying authentication types supported by the particular
+	service.
+
+2002-09-04  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* search.c (search_term_eval): Handle a SEARCH_TERM_TVECTOR.
+	(search_result_free): Free a result vector.
+	(search_result_copy): Handle copying a result vector here.
+
+	* spruce-folder-search.[c,h]: New abstract/default class for
+	searching messages in folders.
+
+	* search.[c,h]: New source files implementing a scheme-like
+	language for evaluating expressions. Will be used as the base for
+	filtering/searching.
+
+2002-08-29  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-sasl-kerberos4.[c,h]: New source files implementing the
+	KERBEROS_V4 SASL mechanism.
+
+	* spruce-sasl-plain.[c,h]: New source files implementing the PLAIN
+	SASL mechanism.
+
+	* spruce-sasl-login.[c,h]: New source files implementing the LOGIN
+	SASL mechanism.
+
+	* spruce-sasl-digest-md5.[c,h]: New source files implementing the
+	DIGEST-MD5 SASL mechanism.
+
+	* spruce-sasl-cram-md5.[c,h]: New source files implementing the
+	CRAM-MD5 SASL mechanism.
+
+	* spruce-sasl-anonymous.[c,h]: New source files implementing the
+	ANONYMOUS SASL mechanism.
+
+	* spruce-sasl.[c,h]: New abstract class for SASL mechanisms.
+
+	* md5-utils.[c,h]: MD5 tools.
+
+2002-08-28  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-tcp-stream-raw.[c,h]: New tcp stream subclass
+	implementing a raw tcp connection (ie, no SSL or anything).
+
+	* spruce-tcp-stream.[c,h]: New abstract tcp stream class.
+
+2002-08-22  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/maildir/spruce-maildir-folder.c
+	(spruce_maildir_folder_init): Change the directory separator to a
+	'.' since that seems to be the way Maildir works.
+
+	* providers/mbox/spruce-mbox-folder.c
+	(mbox_folder_list): Fixed some things that were wrong.
+
+	* providers/maildir/spruce-maildir-summary.c
+	(maildir_message_info_save_cb): Removed. this method would have
+	been too inefficient.
+	(maildir_message_info_save): Removed. The parent implementation
+	suits our needs just fine.
+	(maildir_message_info_load): Same.
+	(maildir_message_info_new): Same here.
+	(maildir_summary_save_cb): A replacement for info_save_cb(). This
+	method will be a whole lot faster because it will only need to
+	iterate over the directory listing once instead of n times (where
+	n is the number of messages in our summary). It also allows us to
+	dynamically update our summary if new messages have been
+	delivered.
+
+2002-08-22  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/maildir: New provider implementing Maildir storage.
+
+	* providers/mbox/spruce-mbox-summary.c
+	(spruce_mbox_summary_new): Fixed to set the mbox path.
+
+	* providers/mbox/spruce-mbox-folder.c
+	(spruce_mbox_folder_new): Get the parent folder.
+	(mbox_folder_get_url): Fixed.
+	(mbox_get_summary_filename): Simplified.
+	(mbox_folder_list): s/strcmp/strcpy
+
+2002-07-14  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-folder.c (folder_sync): Default implementation just syncs
+	the summary file, this is good enough for mbox and probably
+	maildir (when I get to it).
+
+	* providers/mbox/spruce-mbox-folder.c
+	(mbox_folder_open): Implemented.
+	(mbox_folder_close): Implemented.
+	(mbox_folder_expunge): Implemented.
+
+2002-07-14  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/mbox/spruce-mbox-folder.c: Updated some things.
+
+	* spruce-folder-summary.c (spruce_folder_summary_save): Virtualise
+	this method because the mbox summary needs to do extra stuff like
+	rewriting the X-Spruce headers in the mbox file.
+	(spruce_folder_summary_load): Virtualised in the case of the easy
+	way failing. This allows the provider a chance to recover by
+	regenerating the summary itself.
+
+	* providers/mbox/spruce-mbox-summary.[c,h]: Added.
+
+2002-07-13  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* providers/mbox/spruce-mbox-folder.[c,h]: Added.
+
+	* providers/mbox/spruce-mbox-store.[c,h]: Added.
+
+	* spruce-folder-summary.c (spruce_folder_summary_add):
+	Implemented.
+
+	* spruce-folder.c (spruce_folder_has_new_messages): Make sure the
+	folder exists and that it can hold messages before bothering to
+	call the subclass' method.
+	(spruce_folder_create): Make sure our parent folder exists and can
+	hold subfolders.
+	(folder_get_uids): Implemented the default implementation.
+	(folder_get_message_info): spruce_folder_summary_uid() already
+	refs the info, so don't ref it again here.
+
+2002-06-18  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-url.[c,h]: New class for handling URLs.
+
+	* spruce-store.[c,h]: New abstract class for message stores.
+
+	* spruce-service.[c,h]: New abstract class for stores and
+	transports.
+
+	* spruce-transport.[c,h]: New abstract class for sending messages.
+
+2002-06-15  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-folder.[c,h]: New abstract class for handling folders.
+
+	* spruce-folder-summary.[c,h]: New source files for handling
+	folder summaries.
+
+	* memchunk.[c,h]: New source files implementing a fast memchunk
+	allocator.
+
+2002-06-14  Jeffrey Stedfast  <fejj@ximian.com>
+
+	* spruce-file-utils.c: New source file containing utility
+	functions for later use with the folder summary code.
